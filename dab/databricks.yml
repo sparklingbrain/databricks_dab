@@ -7,6 +7,22 @@ bundle:
 include:
   - resources/*.yml
   - resources/*/*.yml
+  - clusters/*.yml
+
+variables:
+  dab_notebook:
+    description: Path to the hello notebook
+    default: ../notebooks/hello.ipynb
+  ParentNotebook:
+    description: Path to the parent notebook
+    default: ../notebooks/Parent.ipynb
+  ChildNotebook:
+    description: Path to the child notebook
+    default: ../notebooks/Child.ipynb
+  partitionDate:
+    description: Partition date for the job
+    default: 2025-01-22
+    
 
 targets:
   dev:
@@ -25,6 +41,9 @@ targets:
       host: https://dbc-4c3a7213-0a83.cloud.databricks.com
       # We explicitly deploy to /Workspace/Users/sahoomanoj27@gmail.com to make sure we only have a single copy.
       root_path: /Workspace/Users/sahoomanoj27@gmail.com/.bundle/${bundle.name}/${bundle.target}
+      # root_path: ${workspace.host}
     permissions:
       - user_name: sahoomanoj27@gmail.com
         level: CAN_MANAGE
+    variables:
+      dab_notebook: ../notebooks/hello_prod.ipynb
