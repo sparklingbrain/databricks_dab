@@ -17,7 +17,7 @@ jobs:
   deploy:
     name: 'Deploy bundle'
     runs-on: ubuntu-latest
-    environment: dev
+    environment: dev # 👈 This is REQUIRED to access dev environment secrets
 
     steps:
       # Check out this repo, so that this workflow can access it.
@@ -39,6 +39,7 @@ jobs:
   # Validate, deploy, and then run the bundle.
   pipeline_update:
     name: 'Run pipeline update'
+    environment: dev
     runs-on: ubuntu-latest
 
     # Run the "deploy" job first.
