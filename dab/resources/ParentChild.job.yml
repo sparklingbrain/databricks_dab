@@ -1,0 +1,79 @@
+# The main job for dab.
+resources:
+  jobs:
+    ParentChildJob:
+      name: ParentChildJob
+
+      trigger:
+        # Run this job every day, exactly one day from the last run; see https://docs.databricks.com/api/workspace/jobs/create#trigger
+        periodic:
+          interval: 1
+          unit: DAYS
+
+      #email_notifications:
+      #  on_failure:
+      #    - your_email@example.com
+
+      tasks: 
+        - task_key: ParentTaskToReturn10Numbers
+          # job_cluster_key: job_cluster_1
+          notebook_task:
+            # notebook_path: ../src/notebook.ipynb
+            notebook_path: ${var.ParentNotebook}
+            base_parameters:
+              numcount: "10"
+
+        - task_key: ChildNotebook
+          depends_on: 
+            - task_key: ParentTaskToReturn10Numbers
+          # job_cluster_key: job_cluster_1
+          for_each_task:
+            inputs: "{{tasks.ParentTaskToReturn10Numbers.values.itemlist}}"            
+            concurrency: 2
+            task:
+              task_key: ChildTaskToReturnNumber
+              notebook_task:
+                notebook_path: ${var.ChildNotebook}
+                base_parameters:
+                 from_parent: "{{input}}"
+
+      
+        # - task_key: notebook_task
+        #   # job_cluster_key: job_cluster_1
+        #   notebook_task:
+        #     # notebook_path: ../src/notebook.ipynb
+        #     notebook_path: ${var.dab_notebook}
+        #     base_parameters:
+        #       notebook_param: "my_param_value"
+              # limit_param: 1
+            
+        # - task_key: notebook_task_2
+        #   # job_cluster_key: job_cluster_2
+        #   notebook_task:
+        #     # notebook_path: ../src/notebook.ipynb
+        #     notebook_path: ${var.dab_notebook}
+
+        # - task_key: notebook_task_3
+        #   existing_dab_cluster: {var.existing_dab_cluster}            
+        #   notebook_task:
+        #     notebook_path: ${var.dab_notebook}
+
+      queue:
+        enabled: true
+      performance_target: PERFORMANCE_OPTIMIZED
+
+      # job_clusters:
+      #   - job_cluster_key: job_cluster_1
+      #     new_cluster: ${var.dab_cluster_task_1}
+
+      #   - job_cluster_key: job_cluster_2
+      #     new_cluster: ${var.dab_cluster_task_2}
+
+      #   - job_cluster_key: job_cluster_default
+      #     new_cluster:
+      #       spark_version: 15.4.x-scala2.12
+      #       node_type_id: i3.xlarge
+      #       data_security_mode: SINGLE_USER
+      #       autoscale:
+      #         min_workers: 1
+      #         max_workers: 4
